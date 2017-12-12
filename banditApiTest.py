@@ -259,9 +259,9 @@ if __name__ == '__main__':
     test_users = prepare_test_users(R)
     print(test_users)
 
-    fileLocation = "/home/soon/Desktop/runs/all"
+    fileLocation = "/home/soon/Desktop/runs/all/"
     # '''
-    fileLocation = "/home/soon/Desktop/runs/dense"
+    fileLocation = "/home/soon/Desktop/runs/dense/"
     # Dense
     ratingMatrix = R.copy()
     for curr in range(test_users.shape[0]):
