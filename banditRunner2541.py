@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import sys
 
 class BanditRunner2541(object):
     '''
@@ -75,8 +76,6 @@ class BanditRunner2541(object):
         self.reset()
         trainMask = self.legalTrainMask.copy()
         exploreMask = self.legalExploreMask.copy()
-        # Start from trained model
-        maxStateCounter = self.getMaxExplorationNumberUser(exploreMask)
         
         # TODO: REMOVE ALL THE TEMP BELOW THAT WAS ONLY TEMPORARY
         tempMaxNumUser = 20 # Try out on the first 50 users
@@ -89,7 +88,22 @@ class BanditRunner2541(object):
                 # Return only the ranking matrix for those users
                 self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
                 return self.rankingMatrix[:tempMaxNumUser]
-            print("ChoiceUser: ", userIndex)
+            # Initialize a proper mask
+            nonzeroMask = np.add(self.legalTrainMask, self.legalExploreMask)
+            # Initialize train to everything to 1 which was not zero initially
+            trainMask = nonzeroMask.copy()
+            # Initialize explore to everything to 0.0
+            exploreMask = np.zeros(nonzeroMask.shape)
+
+            # Swap them up for a specific user
+            temp = exploreMask[userIndex].copy()
+            exploreMask[userIndex] = trainMask[userIndex].copy()
+            trainMask[userIndex] = temp.copy()
+
+            # Start from trained model
+            maxStateCounter = self.getMaxExplorationNumberUser(exploreMask)
+            print("ChoiceUserIndex: ", userIndex)
+            print("User number: ", count)
             # TODO: Need some way of copying or initializing, not sure if this works, it works for now since loading
             currUncertaintyModel = self.uncertaintyModel
             # Load from scratch for eachuser
@@ -121,7 +135,7 @@ class BanditRunner2541(object):
         print("Places for exploreMask for currentUser")
         print(np.where(exploreMask[choiceUser] == 1.0))
         print("Places for trainMask for currentUser")
-        print(np.where(trainMask[choiceUser] == 0.0))
+        print(np.where(trainMask[choiceUser] == 1.0))
 
         if choiceUser >= exploreMask.shape[0] or choiceItem >= exploreMask.shape[1]:
             raise ValueError("Choice given is invalid in exploreMask")
