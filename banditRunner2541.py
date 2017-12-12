@@ -9,7 +9,7 @@ class BanditRunner2541(object):
     # Public Methods
     #--------------------------------------------------------------------------------------
 
-    def __init__(self, ratingMatrix, legalTrainMask, legalTestMask, modelName="", fileLocation="~/"):
+    def __init__(self, ratingMatrix, legalTrainMask, legalTestMask, testUsers, modelName="", fileLocation="~/"):
         self.ratingMatrix = ratingMatrix
         self.legalTrainMask = legalTrainMask
         self.legalExploreMask = legalTestMask
@@ -22,6 +22,7 @@ class BanditRunner2541(object):
         self.fileExt = ".bin"
         self.seedNumber = 521
         self.numSamples = 100
+        self.testUsers = testUsers
         self.rankingMatrix = None
         self.orderChoices = None
 
@@ -78,14 +79,13 @@ class BanditRunner2541(object):
         maxStateCounter = self.getMaxExplorationNumberUser(exploreMask)
         
         # TODO: REMOVE ALL THE TEMP BELOW THAT WAS ONLY TEMPORARY
-        tempMaxNumUser = 50 # Try out on the first 50 users
-        tempMaxNumItem = 30 # To try out users with 30 items
-        tempMaxNumUser = 4 # Try out on the first 50 users
-        tempMaxNumItem = 4 # To try out users with 30 items
+        tempMaxNumUser = 20 # Try out on the first 50 users
+        tempMaxNumItem = 50 # To try out users with 30 items
 
         # Iterate for each user separately
-        for userIndex in range(exploreMask.shape[0]):
-            if userIndex >= tempMaxNumUser:
+        count = 0
+        for userIndex in self.testUsers:
+            if count == tempMaxNumUser:
                 # Return only the ranking matrix for those users
                 self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
                 return self.rankingMatrix[:tempMaxNumUser]
@@ -110,6 +110,7 @@ class BanditRunner2541(object):
                 print("StateCounter: ", stateCounter)
                 print("ChoiceItem: ", choiceItem)
                 trainMask, exploreMask = self.explore(userIndex, choiceItem, trainMask, exploreMask, stateCounter)
+            count += 1
 
         self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
         return self.rankingMatrix

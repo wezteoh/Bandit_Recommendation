@@ -2,12 +2,8 @@
 Example of API usage on how to work with this library
 Tests almost everything.
 '''
-
 from sclrecommender.mask import MaskGenerator
 from sclrecommender.mask import RandomMaskGenerator
-# TODO: from sclrecommender.mask import TimeMaskGenerator
-# TODO: from sclrecommender.mask import ColdUserMaskGenerator
-# TODO: from sclrecommender.mask import ColdItemMaskGenerator
 from sclrecommender.mask import LegalMoveMaskGenerator
 
 from sclrecommender.matrix import RatingMatrix
@@ -30,9 +26,6 @@ from uncertaintyModel import UncertaintyModel
 #from nnmf_vanilla import NNMFVanilla # NNMFVanilla with point estimates
 
 from pmf import PMF
-
-#from banditChoice import BanditChoice # UCB
-#from banditChoice2 import BanditChoice2 # Epsilon Greedy
 
 from banditChoiceBoltzmann import BanditChoiceBoltzmann
 from banditChoiceUCBEmpirical import BanditChoiceUCBEmpirical
@@ -69,6 +62,7 @@ import copy
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import sys
 
 '''
 def pprint(obj):
@@ -89,7 +83,7 @@ def pprint(obj):
 def pprint(obj):
     print(obj)
 
-def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName, fileLocation):
+def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, testUsers, modelName, fileLocation):
     positiveThreshold = 3.0 # Threshold to set prediction to positive labels
     labelTruth = PositiveNegativeMatrix(ratingMatrix, positiveThreshold)
 
@@ -118,7 +112,7 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName, fileLoca
     pprint(legalTrainMask)
     pprint(legalTestMask)
 
-    banditRunner = BanditRunner2541(ratingMatrix.copy(), legalTrainMask.copy(), legalTestMask.copy(), modelName, fileLocation)
+    banditRunner = BanditRunner2541(ratingMatrix.copy(), legalTrainMask.copy(), legalTestMask.copy(), testUsers, modelName, fileLocation)
     banditRunner.setUncertaintyModel(nnmf)
     banditRunner.setBanditChoice(ucb)
     
@@ -150,8 +144,6 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName, fileLoca
     k = 10 # number of items for each user is 20, so should be less than 20 so recall not guaranteed to be 1
 
     #-----------------------------------------------------------------------
-    tempMaxNumUser = 4 # TODO TEMPORARY, FOLLOWS NUMBER IN BANDIT RUNNER
-    tempMaxNumItem = 4 # for printing ranking matrix
     print("TEMP SHRINK TO tempMaxNumUser!")
     print(ratingMatrix.shape)
     ratingMatrix = ratingMatrix[:tempMaxNumUser]
@@ -238,14 +230,13 @@ if __name__ == '__main__':
     random.seed(seedNum)
 
     
-    '''
     # Anything with pprint(numpyVariable) means it is a numpy matrix
     # Step 1: Get data based on dataset specific parser
     # dataDirectory = "sclrecommender/data/movielens/ml-100k"
     dataDirectory ="ml-100k"
     mlp = MovieLensParser100k(dataDirectory)
-    numUser = 10 
-    numItem = 10
+    numUser = 50 
+    numItem = 50
     exParser = ExampleParser("")
     ratingMatrix = exParser.getRatingMatrix(numUser, numItem)
     ratingMatrix[0][0] = 1.0
@@ -253,23 +244,25 @@ if __name__ == '__main__':
 
     R = ratingMatrix.copy()
 
+    # To run on entire rating matrix
+    ratingMatrix = mlp.getRatingMatrixCopy()
     # Remove the users that are too hot
     ratingMatrix = MatrixTransform(ratingMatrix).coldUsers(830)
     # Sort by users that are hot
     ratingMatrix = MatrixTransform(ratingMatrix).hotUsers()
 
-
     # TODO: Work with R
     R = preprocess_data(R)
     test_users = prepare_test_users(R)
-    ratingMatrix = mlp.getRatingMatrixCopy()
-    '''
 
-    numUser = 50 
-    numItem = 50
-    exParser = ExampleParser("")
-    ratingMatrix = exParser.getRatingMatrix(numUser, numItem)
-    ratingMatrix[0][0] = 1.0 # Make sure at least 1 1.0
+    tempMaxNumUser = 20 # TODO TEMPORARY, FOLLOWS NUMBER IN BANDIT RUNNER
+    tempMaxNumItem = 50 # for printing ranking matrix
+    print("TEMP SHRINK TO tempMaxNumUser!")
+    testUsers = np.array([i for i in range(tempMaxNumUser)])
+    # TODO FOR DENSE
+    # ratingMatrix = R.copy()
+    # testUsers = test_users
+
 
     # Step 2: Generate both Rating Matrix and Label Matrix for evaluation
     rmTruth = RatingMatrix(ratingMatrix)
@@ -301,17 +294,45 @@ if __name__ == '__main__':
     xLabel = 'Exploration Number'
     yLabel = 'Cumulative Instantaneous Regret'
 
-    fileLocation = "/home/soon/Desktop/runs/"
+    # TODO: PICK FOR DENSE AND ALL
+    fileLocation = "/home/soon/Desktop/runs/dense"
+    fileLocation = "/home/soon/Desktop/runs/all"
     # Create the folder
     bashCommand = "mkdir -p " + fileLocation
     import subprocess
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
     #----------------------------------------
+    um = UncertaintyModel(ratingMatrix.copy())
+    worstChoice = WorstChoice()
+    modelString8 = "Worst"
+    x8s, y8s = runAll(um, worstChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString8, fileLocation)
+    currI = 0
+    for x8, y8 in zip(x8s, y8s):
+        plt.plot(x8, y8, label=modelString8 + str(currI))
+        currI += 1
+    x8 = x8s[0]
+    y8 = np.mean(y8s, axis = 0)
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString8)
+    plt.savefig(fileLocation + "worstChoices.png")
+    plt.clf()
+    plt.plot(x8, y8, label=modelString8 + str(currI))
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString8)
+    plt.savefig(fileLocation + "worstChoicesMean.png")
+    np.save(fileLocation + "x8.npy", x8)
+    np.save(fileLocation + "y8s.npy", y8s)
+    plt.clf()
+    #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
     bBoltz = BanditChoiceBoltzmann()
     modelString1 = "PMF_Boltzmann"
-    x1s, y1s = runAll(pmf, bBoltz, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString1, fileLocation)
+    x1s, y1s = runAll(pmf, bBoltz, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString1, fileLocation)
     currI = 0
     for x1, y1 in zip(x1s, y1s):
         plt.plot(x1, y1, label=modelString1 + str(currI))
@@ -337,7 +358,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bExploit = BanditChoiceExploit()
     modelString2 = "PMF_Exploit"
-    x2s, y2s = runAll(pmf, bExploit, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString2, fileLocation)
+    x2s, y2s = runAll(pmf, bExploit, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(),testUsers, modelString2, fileLocation)
     currI = 0
     for x2, y2 in zip(x2s, y2s):
         plt.plot(x2, y2, label=modelString2 + str(currI))
@@ -363,7 +384,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bUcbEmpirical = BanditChoiceUCBEmpirical()
     modelString3 = "PMF_UCB"
-    x3s, y3s = runAll(pmf, bUcbEmpirical, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString3, fileLocation)
+    x3s, y3s = runAll(pmf, bUcbEmpirical, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(),testUsers, modelString3, fileLocation)
     currI = 0
     for x3, y3 in zip(x3s, y3s):
         plt.plot(x3, y3, label=modelString3 + str(currI))
@@ -389,7 +410,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bThompson = BanditChoiceThompsonSampling()
     modelString4 = "PMF_Thompson_Sampling"
-    x4s, y4s = runAll(pmf, bThompson, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString4, fileLocation)
+    x4s, y4s = runAll(pmf, bThompson, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString4, fileLocation)
     currI = 0
     for x4, y4 in zip(x4s, y4s):
         plt.plot(x4, y4, label=modelString4 + str(currI))
@@ -415,7 +436,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bEntropy = BanditChoiceEntropy()
     modelString5 = "PMF_Entropy"
-    x5s, y5s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString5, fileLocation)
+    x5s, y5s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString5, fileLocation)
     currI = 0
     for x5, y5 in zip(x5s, y5s):
         plt.plot(x5, y5, label=modelString5 + str(currI))
@@ -441,7 +462,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bEgreedy= BanditChoiceEgreedy()
     modelString6 = "PMF_eGreedy"
-    x6s, y6s = runAll(pmf, bEgreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6, fileLocation)
+    x6s, y6s = runAll(pmf, bEgreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString6, fileLocation)
     currI = 0
     for x6, y6 in zip(x6s, y6s):
         plt.plot(x6, y6, label=modelString6 + str(currI))
@@ -467,7 +488,7 @@ if __name__ == '__main__':
     um = UncertaintyModel(ratingMatrix.copy())
     optimalChoice = OptimalChoice()
     modelString7 = "Optimal"
-    x7s, y7s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString7, fileLocation)
+    x7s, y7s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString7, fileLocation)
     currI = 0
     for x7, y7 in zip(x7s, y7s):
         plt.plot(x7, y7, label=modelString7 + str(currI))
@@ -490,36 +511,10 @@ if __name__ == '__main__':
     np.save(fileLocation + "y7s.npy", y7s)
     plt.clf()
     #----------------------------------------
-    um = UncertaintyModel(ratingMatrix.copy())
-    worstChoice = WorstChoice()
-    modelString8 = "Worst"
-    x8s, y8s = runAll(um, worstChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString8, fileLocation)
-    currI = 0
-    for x8, y8 in zip(x8s, y8s):
-        plt.plot(x8, y8, label=modelString8 + str(currI))
-        currI += 1
-    x8 = x8s[0]
-    y8 = np.mean(y8s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString8)
-    plt.savefig(fileLocation + "worstChoices.png")
-    plt.clf()
-    plt.plot(x8, y8, label=modelString8 + str(currI))
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString8)
-    plt.savefig(fileLocation + "worstChoicesMean.png")
-    np.save(fileLocation + "x8.npy", x8)
-    np.save(fileLocation + "y8s.npy", y8s)
-    plt.clf()
-    #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
     rc = RandomChoice()
     modelString9 = "PMF_Random"
-    x9s, y9s = runAll(pmf, rc, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString9, fileLocation)
+    x9s, y9s = runAll(pmf, rc, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString9, fileLocation)
     currI = 0
     for x9, y9 in zip(x9s, y9s):
         plt.plot(x9, y9, label=modelString9 + str(currI))
