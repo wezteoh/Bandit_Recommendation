@@ -57,7 +57,7 @@ def prepare_test_users(R, upper_threshold = 800, lower_threshold=65, test_size=2
     qualified = np.bitwise_and(rating_density>lower_threshold, rating_density<=upper_threshold)
     dense_users = np.where(qualified)[0]
     
-    return np.random.choice(dense_users, test_size)
+    return np.random.choice(dense_users, test_size, replace=False)
     
     
     
