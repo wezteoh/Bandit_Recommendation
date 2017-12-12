@@ -252,16 +252,35 @@ if __name__ == '__main__':
     ratingMatrix = MatrixTransform(ratingMatrix).hotUsers()
 
     # TODO: Work with R
-    R = preprocess_data(R)
-    test_users = prepare_test_users(R)
-
     tempMaxNumUser = 20 # TODO TEMPORARY, FOLLOWS NUMBER IN BANDIT RUNNER
     tempMaxNumItem = 50 # for printing ranking matrix
-    print("TEMP SHRINK TO tempMaxNumUser!")
+    print("Test Users")
+    R = preprocess_data(R)
+    test_users = prepare_test_users(R)
+    print(test_users)
+
+    fileLocation = "/home/soon/Desktop/runs/all"
+    # '''
+    fileLocation = "/home/soon/Desktop/runs/dense"
+    # Dense
+    ratingMatrix = R.copy()
+    for curr in range(test_users.shape[0]):
+        # Swap them
+        userIndex = test_users[curr]
+        temp = ratingMatrix[curr].copy()
+        temp2 = ratingMatrix[userIndex].copy()
+        ratingMatrix[curr] = temp2.copy()
+        ratingMatrix[userIndex] = temp.copy()
+    # '''
+
     testUsers = np.array([i for i in range(tempMaxNumUser)])
-    # TODO FOR DENSE
-    # ratingMatrix = R.copy()
-    # testUsers = test_users
+
+    # TODO: PICK FOR DENSE AND ALL
+    # Create the folder
+    bashCommand = "mkdir -p " + fileLocation
+    import subprocess
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
 
 
     # Step 2: Generate both Rating Matrix and Label Matrix for evaluation
@@ -293,15 +312,6 @@ if __name__ == '__main__':
 
     xLabel = 'Exploration Number'
     yLabel = 'Cumulative Instantaneous Regret'
-
-    # TODO: PICK FOR DENSE AND ALL
-    fileLocation = "/home/soon/Desktop/runs/dense"
-    fileLocation = "/home/soon/Desktop/runs/all"
-    # Create the folder
-    bashCommand = "mkdir -p " + fileLocation
-    import subprocess
-    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-    output, error = process.communicate()
     #----------------------------------------
     um = UncertaintyModel(ratingMatrix.copy())
     worstChoice = WorstChoice()
