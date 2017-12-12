@@ -96,7 +96,7 @@ class PMF(UncertaintyModel):
         avail = np.where((self.ratingMatrix[user]>0)-train_mask[user])[0]
         v_means = sess.run(V_means)[avail]
         rating_means = np.sum(u_mean*v_means, axis=1)
-        true_ratings = R[user][avail]
+        true_ratings = self.ratingMatrix[user][avail]
 
         user_mse = np.mean(np.square(true_ratings-rating_means))
 
