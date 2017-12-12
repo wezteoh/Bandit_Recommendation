@@ -150,8 +150,8 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName):
     k = 10 # number of items for each user is 20, so should be less than 20 so recall not guaranteed to be 1
 
     #-----------------------------------------------------------------------
-    tempMaxNumUser = 50 # TODO TEMPORARY, FOLLOWS NUMBER IN BANDIT RUNNER
-    tempMaxNumItem = 30 # for printing ranking matrix
+    tempMaxNumUser = 4 # TODO TEMPORARY, FOLLOWS NUMBER IN BANDIT RUNNER
+    tempMaxNumItem = 4 # for printing ranking matrix
     print("TEMP SHRINK TO tempMaxNumUser!")
     print(ratingMatrix.shape)
     ratingMatrix = ratingMatrix[:tempMaxNumUser]
@@ -200,18 +200,19 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName):
         instantRegretPerUser.append(regretBasedOnInstantaneousRegret)
         cumulativeRegretPerUser.append(cumulativeInstantaneousRegret)
     meanInstantRegret = np.mean(np.array(instantRegretPerUser))
-    cumRegretUser = np.array(cumulativeRegretPerUser)
-    meanCumRegretUser = np.mean(cumRegretUser, axis = 0)
     print("MeanInstantRegret")
     print(meanInstantRegret)
+    # cumRegretUser = np.array(cumulativeRegretPerUser)
+    cumRegretUser = np.array([np.array(xi) for xi in cumulativeRegretPerUser])
+
     print("CumulativeInstantRegretPerUser")
     print(cumRegretUser.shape)
     print(cumRegretUser)
+    meanCumRegretUser = np.mean(cumRegretUser, axis = 0)
     print("MeanCumulativeInstantRegretPerUser")
     print(meanCumRegretUser.shape)
     print(meanCumRegretUser)
-
-    print("Ranking matrix for 20 users and 20 items")
+    print("Ranking matrix for numUser users and numItems items")
     print(rankingMatrix[:, :tempMaxNumItem])
 
     #-----------------------------------------------------------------
@@ -235,7 +236,9 @@ if __name__ == '__main__':
     seedNum = 196
     np.random.seed(seedNum)
     random.seed(seedNum)
+
     
+    '''
     # Anything with pprint(numpyVariable) means it is a numpy matrix
     # Step 1: Get data based on dataset specific parser
     # dataDirectory = "sclrecommender/data/movielens/ml-100k"
@@ -243,7 +246,7 @@ if __name__ == '__main__':
     mlp = MovieLensParser100k(dataDirectory)
     numUser = 10 
     numItem = 10
-    exParser = ExampleParser(dataDirectory)
+    exParser = ExampleParser("")
     ratingMatrix = exParser.getRatingMatrix(numUser, numItem)
     ratingMatrix[0][0] = 1.0
     ratingMatrix = mlp.getRatingMatrixCopy()
@@ -259,6 +262,14 @@ if __name__ == '__main__':
     # TODO: Work with R
     R = preprocess_data(R)
     test_users = prepare_test_users(R)
+    ratingMatrix = mlp.getRatingMatrixCopy()
+    '''
+
+    numUser = 50 
+    numItem = 50
+    exParser = ExampleParser("")
+    ratingMatrix = exParser.getRatingMatrix(numUser, numItem)
+    ratingMatrix[0][0] = 1.0 # Make sure at least 1 1.0
 
     # Step 2: Generate both Rating Matrix and Label Matrix for evaluation
     rmTruth = RatingMatrix(ratingMatrix)
@@ -345,7 +356,7 @@ if __name__ == '__main__':
     plt.clf()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
-    bUcbEmpirical = BanditChoiceUCBEmpirical
+    bUcbEmpirical = BanditChoiceUCBEmpirical()
     modelString3 = "PMF_UCB"
     x3s, y3s = runAll(pmf, bUcbEmpirical, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString3)
     currI = 0
@@ -371,7 +382,7 @@ if __name__ == '__main__':
     plt.clf()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
-    bThompson = BanditChoiceThompsonSampling
+    bThompson = BanditChoiceThompsonSampling()
     modelString4 = "PMF_Thompson_Sampling"
     x4s, y4s = runAll(pmf, bThompson, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString4)
     currI = 0
@@ -397,7 +408,7 @@ if __name__ == '__main__':
     plt.clf()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
-    bEntropy = BanditChoiceEntropy
+    bEntropy = BanditChoiceEntropy()
     modelString5 = "PMF_Entropy"
     x5s, y5s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString5)
     currI = 0
@@ -423,9 +434,9 @@ if __name__ == '__main__':
     plt.clf()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
-    bEgreedy= BanditChoiceEgreedy
+    bEgreedy= BanditChoiceEgreedy()
     modelString6 = "PMF_eGreedy"
-    x6s, y6s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6)
+    x6s, y6s = runAll(pmf, bEgreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6)
     currI = 0
     for x6, y6 in zip(x6s, y6s):
         plt.plot(x6, y6, label=modelString6 + str(currI))

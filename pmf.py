@@ -112,8 +112,8 @@ class PMF(UncertaintyModel):
             self.user_var_progress[user] = np.vstack((self.user_var_progress[user], u_var))
             self.user_mse_progress[user].append(user_mse)
 
-    def save_uncertainty_progress(self, data_name, bandit_name, folder='BanditProgress'):
-        fname = data_name + '_' + bandit_name + '_progress.pkl'
+    def save_uncertainty_progress(self, data_name, bandit_name, folder='/home/soon/Desktop/teoh'):
+        fname = "file_" + data_name + '_' + bandit_name + '_progress.pkl'
         location = os.path.join(folder, fname)
         user_progress = [self.user_mean_progress, self.user_var_progress, self.user_mse_progress]
         _pickle.dump(user_progress, open(location,'wb'))
@@ -123,5 +123,4 @@ class PMF(UncertaintyModel):
         self.user_var_progress = {}
         self.user_mse_progress = {}
         self.current_user = -1
-
-        print('saved to ' + location)
+        print('Saved to ' + location)

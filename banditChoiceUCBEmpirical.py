@@ -6,9 +6,9 @@ class BanditChoiceUCBEmpirical(object):
         pass
 
     def evaluate(self, posteriorMatrix, legalItemVector, ratingMatrixForUser=None):
-
         user_indices = np.array(range(len(legalItemVector)))
         user_indices = user_indices[legalItemVector == 1]
+
         user_ratings = posteriorMatrix[:,user_indices]
 
         itemIndex = self.get_ucb_empirical(user_ratings, user_indices)

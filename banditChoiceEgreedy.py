@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class BanditChoiceEgreedy(object):
     def __init__(self):
@@ -10,7 +11,7 @@ class BanditChoiceEgreedy(object):
         user_indices = user_indices[legalItemVector == 1]
         user_ratings = posteriorMatrix[:,user_indices]
 
-        itemIndex = self.get_sample(user_ratings, user_indices)
+        itemIndex = self.get_egreedy(user_ratings, user_indices)
 
         return itemIndex
 
