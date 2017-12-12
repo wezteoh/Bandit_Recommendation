@@ -24,5 +24,5 @@ class UncertaintyModel(object):
         # return (k, m) matrix of k samples for user i
         return None
         
-   def save_uncertainty_progress(self, data_name, bandit_name, folder='BanditProgress')
+    def save_uncertainty_progress(self, data_name, bandit_name, folder='BanditProgress'):
         return location

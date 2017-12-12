@@ -4,8 +4,7 @@ class BanditChoiceBoltzmann(object):
     def __init__(self):
         pass
 
-    def evaluate(self, posteriorMatrix, legalItemVector):
-
+    def evaluate(self, posteriorMatrix, legalItemVector, ratingMatrixForUser=None):
         user_indices = np.array(range(len(legalItemVector)))
         user_indices = user_indices[legalItemVector == 1]
         user_ratings = posteriorMatrix[:,user_indices]
