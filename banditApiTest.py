@@ -173,7 +173,9 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, testUsers, modelNam
     # Option 6.2.2  Bandit evaluators 
     discountFactor = 0.99
     regretBasedOnOptimalRegret = RegretOptimalEvaluator(ratingMatrix, rankingMatrix, discountFactor).evaluate()
-    instantaneousRegret = RegretInstantaneousEvaluator(ratingMatrix, rankingMatrix, discountFactor, legalTestMask, orderChoices)
+    nonZeroMask = np.ones(ratingMatrix.shape)
+    nonZeroMask[np.where(ratingMatrix == 0.0)] = 0.0
+    instantaneousRegret = RegretInstantaneousEvaluator(ratingMatrix, rankingMatrix, discountFactor, nonZeroMask.copy() ,orderChoices)
     regretBasedOnInstantaneousRegret = instantaneousRegret.evaluate()
     cumulativeInstantaneousRegret =  instantaneousRegret.getCumulativeInstantaneousRegret()
     print("RegretBasedOnOptimalRegret")
@@ -312,6 +314,32 @@ if __name__ == '__main__':
 
     xLabel = 'Exploration Number'
     yLabel = 'Cumulative Instantaneous Regret'
+    #----------------------------------------
+    um = UncertaintyModel(ratingMatrix.copy())
+    optimalChoice = OptimalChoice()
+    modelString7 = "Optimal"
+    x7s, y7s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString7, fileLocation)
+    currI = 0
+    for x7, y7 in zip(x7s, y7s):
+        plt.plot(x7, y7, label=modelString7 + str(currI))
+        currI += 1
+    x7 = x7s[0]
+    y7 = np.mean(y7s, axis = 0)
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString7)
+    plt.savefig(fileLocation + "optimalChoices.png")
+    plt.clf()
+    plt.plot(x7, y7, label=modelString7 + str(currI))
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString7)
+    plt.savefig(fileLocation + "optimalChoicesMean.png")
+    np.save(fileLocation + "x7.npy", x7)
+    np.save(fileLocation + "y7s.npy", y7s)
+    plt.clf()
     #----------------------------------------
     um = UncertaintyModel(ratingMatrix.copy())
     worstChoice = WorstChoice()
@@ -493,32 +521,6 @@ if __name__ == '__main__':
     plt.savefig(fileLocation + modelString6 + "Mean.png")
     np.save(fileLocation + "x6.npy", x6)
     np.save(fileLocation + "y6s.npy", y6s)
-    plt.clf()
-    #----------------------------------------
-    um = UncertaintyModel(ratingMatrix.copy())
-    optimalChoice = OptimalChoice()
-    modelString7 = "Optimal"
-    x7s, y7s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), testUsers, modelString7, fileLocation)
-    currI = 0
-    for x7, y7 in zip(x7s, y7s):
-        plt.plot(x7, y7, label=modelString7 + str(currI))
-        currI += 1
-    x7 = x7s[0]
-    y7 = np.mean(y7s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString7)
-    plt.savefig(fileLocation + "optimalChoices.png")
-    plt.clf()
-    plt.plot(x7, y7, label=modelString7 + str(currI))
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString7)
-    plt.savefig(fileLocation + "optimalChoicesMean.png")
-    np.save(fileLocation + "x7.npy", x7)
-    np.save(fileLocation + "y7s.npy", y7s)
     plt.clf()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
