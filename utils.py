@@ -51,7 +51,7 @@ def remove_polarized_ratings(R):
 def preprocess_data(R, MIN_PERC_FILLED_ITEMS=0.1, MIN_PERC_FILLED_USERS=0.25):
     return _desparsify(remove_polarized_ratings(R), MIN_PERC_FILLED_ITEMS, MIN_PERC_FILLED_USERS)
     
-def prepare_test_users(R, upper_threshold = 80, lower_threshold=65, test_size=20, seed=1337):
+def prepare_test_users(R, upper_threshold = 800, lower_threshold=65, test_size=20, seed=1337):
     np.random.seed(seed)
     rating_density = np.sum((R>0), axis=1)    
     qualified = np.bitwise_and(rating_density>lower_threshold, rating_density<=upper_threshold)
