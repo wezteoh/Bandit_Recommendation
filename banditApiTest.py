@@ -89,7 +89,7 @@ def pprint(obj):
 def pprint(obj):
     print(obj)
 
-def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName):
+def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName, fileLocation):
     positiveThreshold = 3.0 # Threshold to set prediction to positive labels
     labelTruth = PositiveNegativeMatrix(ratingMatrix, positiveThreshold)
 
@@ -118,7 +118,7 @@ def runAll(nnmf, ucb, ratingMatrix, trainMatrix, testMatrix, modelName):
     pprint(legalTrainMask)
     pprint(legalTestMask)
 
-    banditRunner = BanditRunner2541(ratingMatrix.copy(), legalTrainMask.copy(), legalTestMask.copy(), modelName)
+    banditRunner = BanditRunner2541(ratingMatrix.copy(), legalTrainMask.copy(), legalTestMask.copy(), modelName, fileLocation)
     banditRunner.setUncertaintyModel(nnmf)
     banditRunner.setBanditChoice(ucb)
     
@@ -301,12 +301,17 @@ if __name__ == '__main__':
     xLabel = 'Exploration Number'
     yLabel = 'Cumulative Instantaneous Regret'
 
-    fileLocation = "/home/soon/Desktop/"
+    fileLocation = "/home/soon/Desktop/runs/"
+    # Create the folder
+    bashCommand = "mkdir -p " + fileLocation
+    import subprocess
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
     #----------------------------------------
     pmf = PMF(ratingMatrix.copy())
     bBoltz = BanditChoiceBoltzmann()
     modelString1 = "PMF_Boltzmann"
-    x1s, y1s = runAll(pmf, bBoltz, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString1)
+    x1s, y1s = runAll(pmf, bBoltz, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString1, fileLocation)
     currI = 0
     for x1, y1 in zip(x1s, y1s):
         plt.plot(x1, y1, label=modelString1 + str(currI))
@@ -332,7 +337,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bExploit = BanditChoiceExploit()
     modelString2 = "PMF_Exploit"
-    x2s, y2s = runAll(pmf, bExploit, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString2)
+    x2s, y2s = runAll(pmf, bExploit, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString2, fileLocation)
     currI = 0
     for x2, y2 in zip(x2s, y2s):
         plt.plot(x2, y2, label=modelString2 + str(currI))
@@ -358,7 +363,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bUcbEmpirical = BanditChoiceUCBEmpirical()
     modelString3 = "PMF_UCB"
-    x3s, y3s = runAll(pmf, bUcbEmpirical, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString3)
+    x3s, y3s = runAll(pmf, bUcbEmpirical, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString3, fileLocation)
     currI = 0
     for x3, y3 in zip(x3s, y3s):
         plt.plot(x3, y3, label=modelString3 + str(currI))
@@ -384,7 +389,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bThompson = BanditChoiceThompsonSampling()
     modelString4 = "PMF_Thompson_Sampling"
-    x4s, y4s = runAll(pmf, bThompson, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString4)
+    x4s, y4s = runAll(pmf, bThompson, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString4, fileLocation)
     currI = 0
     for x4, y4 in zip(x4s, y4s):
         plt.plot(x4, y4, label=modelString4 + str(currI))
@@ -410,7 +415,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bEntropy = BanditChoiceEntropy()
     modelString5 = "PMF_Entropy"
-    x5s, y5s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString5)
+    x5s, y5s = runAll(pmf, bEntropy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString5, fileLocation)
     currI = 0
     for x5, y5 in zip(x5s, y5s):
         plt.plot(x5, y5, label=modelString5 + str(currI))
@@ -436,7 +441,7 @@ if __name__ == '__main__':
     pmf = PMF(ratingMatrix.copy())
     bEgreedy= BanditChoiceEgreedy()
     modelString6 = "PMF_eGreedy"
-    x6s, y6s = runAll(pmf, bEgreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6)
+    x6s, y6s = runAll(pmf, bEgreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6, fileLocation)
     currI = 0
     for x6, y6 in zip(x6s, y6s):
         plt.plot(x6, y6, label=modelString6 + str(currI))
@@ -459,177 +464,98 @@ if __name__ == '__main__':
     np.save(fileLocation + "y6s.npy", y6s)
     plt.clf()
     #----------------------------------------
-    #----------------------------------------
-    #----------------------------------------
-    #----------------------------------------
-    '''
     um = UncertaintyModel(ratingMatrix.copy())
     optimalChoice = OptimalChoice()
-    modelString5 = "Optimal"
-    x5s, y5s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString5)
+    modelString7 = "Optimal"
+    x7s, y7s = runAll(um, optimalChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString7, fileLocation)
     currI = 0
-    for x5, y5 in zip(x5s, y5s):
-        plt.plot(x5, y5, label=modelString5 + str(currI))
+    for x7, y7 in zip(x7s, y7s):
+        plt.plot(x7, y7, label=modelString7 + str(currI))
         currI += 1
-    x5 = x5s[0]
-    y5 = np.mean(y5s, axis = 0)
+    x7 = x7s[0]
+    y7 = np.mean(y7s, axis = 0)
     plt.legend(loc = 'upper left')
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
-    plt.title(modelString5)
+    plt.title(modelString7)
     plt.savefig(fileLocation + "optimalChoices.png")
     plt.clf()
-    plt.plot(x5, y5, label=modelString5 + str(currI))
+    plt.plot(x7, y7, label=modelString7 + str(currI))
     plt.legend(loc = 'upper left')
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
-    plt.title(modelString5)
+    plt.title(modelString7)
     plt.savefig(fileLocation + "optimalChoicesMean.png")
-    np.save(fileLocation + "x5.npy", x5)
-    np.save(fileLocation + "y5s.npy", y5s)
-    plt.clf()
-    #kaka = np.load(fileLocation + "x5s.npy")
-    #print("x5: ",  x5)
-    #print("KAKA: ", kaka)
-
-    #----------------------------------------
-    svi_nnmf = NNMF(ratingMatrix.copy())
-    ucb = BanditChoice()
-    #svi_nnmf = UncertaintyModel(ratingMatrix.copy())
-    #ucb = RandomChoice()
-    modelString1 = "SVI_NNMF, UCB"
-    x1s, y1s = runAll(svi_nnmf, ucb, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString1)
-    currI = 0
-    for x1, y1 in zip(x1s, y1s):
-        plt.plot(x1, y1, label=modelString1 + str(currI))
-        currI += 1
-    x1 = x1s[0]
-    y1 = np.mean(y1s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString1)
-    plt.savefig("/home/soon/Desktop/SviNnmfUcbChoices.png")
-    plt.clf()
-    plt.plot(x1, y1, label=modelString1 + str(currI))
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString1)
-    plt.savefig("/home/soon/Desktop/SviNnmfUcbChoicesMean.png")
-    np.save(fileLocation + "x1.npy", x1)
-    np.save(fileLocation + "y1s.npy", y1s)
-    plt.clf()
-    #----------------------------------------
-    nnmf_vanilla = NNMFVanilla(ratingMatrix.copy())
-    ucb = BanditChoice()
-    #nnmf_vanilla = UncertaintyModel(ratingMatrix.copy())
-    #ucb = RandomChoice()
-    modelString6 = "NNMF Vanilla"
-    x6s, y6s = runAll(nnmf_vanilla, ucb, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString6)
-    currI = 0
-    for x6, y6 in zip(x6s, y6s):
-        plt.plot(x6, y6, label=modelString6 + str(currI))
-        currI += 1
-    x6 = x6s[0]
-    y6 = np.mean(y6s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString6)
-    plt.savefig("/home/soon/Desktop/nnmfVanilla.png")
-    plt.clf()
-    plt.plot(x6, y6, label=modelString6 + str(currI))
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString6)
-    plt.savefig("/home/soon/Desktop/SviNnmfVanillaMean.png")
-    np.save(fileLocation + "x6.npy", x6)
-    np.save(fileLocation + "y6s.npy", y6s)
-    plt.clf()
-    #----------------------------------------
-    svi_nnmf = NNMF(ratingMatrix.copy())
-    egreedy = BanditChoice2()
-    #svi_nnmf = UncertaintyModel(ratingMatrix.copy())
-    #egreedy = RandomChoice()
-    modelString2 = "SVI_NNMF, Epsilon Greedy"
-    x2s, y2s = runAll(svi_nnmf, egreedy, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString2)
-    currI = 0
-    for x2, y2 in zip(x2s, y2s):
-        plt.plot(x2, y2, label=modelString2 + str(currI))
-        currI += 1
-    x2 = x2s[0]
-    y2 = np.mean(y2s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString2)
-    plt.savefig("/home/soon/Desktop/SviNnmfEpsilonGreedyChoices.png")
-    plt.clf()
-    plt.plot(x2, y2, label=modelString2 + str(currI))
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString2)
-    plt.savefig("/home/soon/Desktop/SviNnmfEpsilonGreedyChoicesMean.png")
-    np.save(fileLocation + "x2.npy", x2)
-    np.save(fileLocation + "y2s.npy", y2s)
-    plt.clf()
-    #----------------------------------------
-    um = UncertaintyModel(ratingMatrix.copy())
-    rc = RandomChoice()
-    modelString3 = "Random"
-    x3s, y3s = runAll(um, rc, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString3)
-    currI = 0
-    for x3, y3 in zip(x3s, y3s):
-        plt.plot(x3, y3, label=modelString3 + str(currI))
-        currI += 1
-    x3 = x3s[0]
-    y3 = np.mean(y3s, axis = 0)
-    plt.legend(loc = 'upper left')
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.title(modelString3)
-    plt.savefig("/home/soon/Desktop/randomChoices.png")
-    np.save(fileLocation + "x3.npy", x3)
-    np.save(fileLocation + "y3s.npy", y3s)
+    np.save(fileLocation + "x7.npy", x7)
+    np.save(fileLocation + "y7s.npy", y7s)
     plt.clf()
     #----------------------------------------
     um = UncertaintyModel(ratingMatrix.copy())
     worstChoice = WorstChoice()
-    modelString4 = "Worst"
-    x4s, y4s = runAll(um, worstChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString4)
+    modelString8 = "Worst"
+    x8s, y8s = runAll(um, worstChoice, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString8, fileLocation)
     currI = 0
-    for x4, y4 in zip(x4s, y4s):
-        plt.plot(x4, y4, label=modelString4 + str(currI))
+    for x8, y8 in zip(x8s, y8s):
+        plt.plot(x8, y8, label=modelString8 + str(currI))
         currI += 1
-    x4 = x4s[0]
-    y4 = np.mean(y4s, axis = 0)
+    x8 = x8s[0]
+    y8 = np.mean(y8s, axis = 0)
     plt.legend(loc = 'upper left')
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
-    plt.title(modelString4)
-    plt.savefig("/home/soon/Desktop/worstChoices.png")
-    np.save(fileLocation + "x4.npy", x4)
-    np.save(fileLocation + "y4s.npy", y4s)
+    plt.title(modelString8)
+    plt.savefig(fileLocation + "worstChoices.png")
+    plt.clf()
+    plt.plot(x8, y8, label=modelString8 + str(currI))
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString8)
+    plt.savefig(fileLocation + "worstChoicesMean.png")
+    np.save(fileLocation + "x8.npy", x8)
+    np.save(fileLocation + "y8s.npy", y8s)
     plt.clf()
     #----------------------------------------
-    '''
+    pmf = PMF(ratingMatrix.copy())
+    rc = RandomChoice()
+    modelString9 = "PMF_Random"
+    x9s, y9s = runAll(pmf, rc, ratingMatrix.copy(), trainMatrix.copy(), testMatrix.copy(), modelString9, fileLocation)
+    currI = 0
+    for x9, y9 in zip(x9s, y9s):
+        plt.plot(x9, y9, label=modelString9 + str(currI))
+        currI += 1
+    x9 = x9s[0]
+    y9 = np.mean(y9s, axis = 0)
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString9)
+    plt.savefig(fileLocation + "randomChoices.png")
+    plt.clf()
+    plt.plot(x9, y9, label=modelString9 + str(currI))
+    plt.legend(loc = 'upper left')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(modelString9)
+    plt.savefig(fileLocation + "randomChoicesMean.png")
+    np.save(fileLocation + "x9.npy", x9)
+    np.save(fileLocation + "y9s.npy", y9s)
+    plt.clf()
+    #----------------------------------------
     modelString = "All Models"
     plt.plot(x1, y1, label=modelString1)
     plt.plot(x2, y2, label=modelString2)
-    plt.plot(x6, y6, label=modelString6)
     plt.plot(x3, y3, label=modelString3)
     plt.plot(x4, y4, label=modelString4)
     plt.plot(x5, y5, label=modelString5)
-    plt.plot(x6, y6, label=modelString5)
+    plt.plot(x6, y6, label=modelString6)
+    plt.plot(x7, y7, label=modelString7)
+    plt.plot(x8, y8, label=modelString8)
+    plt.plot(x9, y9, label=modelString9)
     plt.legend(loc = 'upper left')
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
     plt.title(modelString)
-    plt.savefig("/home/soon/Desktop/AllInOne.png")
+    plt.savefig(fileLocation + "AllInOne.png")
     plt.clf()
-    print("DONE SAVING FIG!")
     print("DONE TESTING")
-    # '''

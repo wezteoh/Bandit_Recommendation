@@ -9,7 +9,7 @@ class BanditRunner2541(object):
     # Public Methods
     #--------------------------------------------------------------------------------------
 
-    def __init__(self, ratingMatrix, legalTrainMask, legalTestMask, modelName=""):
+    def __init__(self, ratingMatrix, legalTrainMask, legalTestMask, modelName="", fileLocation="~/"):
         self.ratingMatrix = ratingMatrix
         self.legalTrainMask = legalTrainMask
         self.legalExploreMask = legalTestMask
@@ -17,7 +17,7 @@ class BanditRunner2541(object):
         self.banditChoice = None
         # Update these hard-coded values
         # TODO: mkdir for these hard-coded values
-        self.fileLocation = "/home/soon/Desktop/models/"
+        self.fileLocation = fileLocation
         self.modelName = modelName
         self.fileExt = ".bin"
         self.seedNumber = 521
@@ -87,7 +87,7 @@ class BanditRunner2541(object):
         for userIndex in range(exploreMask.shape[0]):
             if userIndex >= tempMaxNumUser:
                 # Return only the ranking matrix for those users
-                self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder='/home/soon/Desktop/teoh')
+                self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
                 return self.rankingMatrix[:tempMaxNumUser]
             print("ChoiceUser: ", userIndex)
             # TODO: Need some way of copying or initializing, not sure if this works, it works for now since loading
@@ -111,8 +111,7 @@ class BanditRunner2541(object):
                 print("ChoiceItem: ", choiceItem)
                 trainMask, exploreMask = self.explore(userIndex, choiceItem, trainMask, exploreMask, stateCounter)
 
-    
-        self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder='/home/soon/Desktop/teoh')
+        self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
         return self.rankingMatrix
 
     def explore(self, choiceUser, choiceItem, trainMask, exploreMask, stateCounter):

@@ -25,4 +25,5 @@ class UncertaintyModel(object):
         return None
         
     def save_uncertainty_progress(self, data_name, bandit_name, folder='BanditProgress'):
+        location = "temp"
         return location
