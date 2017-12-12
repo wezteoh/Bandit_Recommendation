@@ -80,11 +80,14 @@ class BanditRunner2541(object):
         # TODO: REMOVE ALL THE TEMP BELOW THAT WAS ONLY TEMPORARY
         tempMaxNumUser = 50 # Try out on the first 50 users
         tempMaxNumItem = 30 # To try out users with 30 items
+        tempMaxNumUser = 4 # Try out on the first 50 users
+        tempMaxNumItem = 4 # To try out users with 30 items
 
         # Iterate for each user separately
         for userIndex in range(exploreMask.shape[0]):
             if userIndex >= tempMaxNumUser:
                 # Return only the ranking matrix for those users
+                self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder='/home/soon/Desktop/teoh')
                 return self.rankingMatrix[:tempMaxNumUser]
             print("ChoiceUser: ", userIndex)
             # TODO: Need some way of copying or initializing, not sure if this works, it works for now since loading
@@ -109,7 +112,7 @@ class BanditRunner2541(object):
                 trainMask, exploreMask = self.explore(userIndex, choiceItem, trainMask, exploreMask, stateCounter)
 
     
-        self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder='BanditProgress')
+        self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder='/home/soon/Desktop/teoh')
         return self.rankingMatrix
 
     def explore(self, choiceUser, choiceItem, trainMask, exploreMask, stateCounter):
