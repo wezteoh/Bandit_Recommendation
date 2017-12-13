@@ -17,7 +17,9 @@ class BanditChoiceThompsonSampling(object):
     
 
     def get_thompson_sample(self, user_ratings, user_indices):
-        #randomly sample ratings and take the argmax of samples
+        '''
+        randomly sample ratings and take the argmax of samples
+        '''
 
         random_sample = random.randint(0,len(user_ratings)-1)
         idx = np.argmax(user_ratings[random_sample])

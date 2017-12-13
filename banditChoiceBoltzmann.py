@@ -15,7 +15,12 @@ class BanditChoiceBoltzmann(object):
 
 
     def get_boltzmann_exploration(self, user_ratings, user_indices, tau=0.1):
-        # tau - temperature parameter, if 0 -> greedy selection
+        '''
+        Convert predicted means to probabilities for each item p_j
+        select each item with probability p_j
+        tau is the temperature scaling parameter
+        default tau as 0.1
+        '''
         temp_scaled = [x/tau for x in np.mean(user_ratings,axis=0)]
         denom = np.sum(np.exp(temp_scaled))
         boltzmann_prob = [np.exp(x)/denom for x in temp_scaled]

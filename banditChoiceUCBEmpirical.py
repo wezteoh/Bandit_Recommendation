@@ -15,10 +15,14 @@ class BanditChoiceUCBEmpirical(object):
 
         return itemIndex
 
-    def get_ucb_empirical(self, user_ratings, user_indices):
-        #select based on argmax(mean+std)
-        alpha = 0.5
-
+    def get_ucb_empirical(self, user_ratings, user_indices, alpha=0.5):
+        '''
+        Given the sampled user ratings and valid indices,
+        return the selected item based on:
+        mean + alpha*std
+        default exploration parameter alpha = 0.5
+        '''
+        
         mean_ratings = np.mean(user_ratings,axis=0)
         std_ratings = np.std(user_ratings,axis=0)
 
