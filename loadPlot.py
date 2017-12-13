@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-fileLocation = "/home/soon/Desktop/runs/"
+fileLocation = "/home/soon/Desktop/runs/full/"
+fileLocation = "/home/soon/Desktop/runs/dense/"
 xLabel = 'Exploration Number'
 yLabel = 'Cumulative Instantaneous Regret'
 x1 = np.load(fileLocation + "x1.npy")
@@ -40,15 +41,24 @@ modelString6 = "PMF_eGreedy"
 modelString7 = "Optimal"
 modelString8 = "Worst"
 modelString9 = "PMF_Random"
+last = -10
+plt.plot(x1[last:], y1[last:], label=modelString1)
+plt.plot(x2[last:], y2[last:], label=modelString2)
+plt.plot(x3[last:], y3[last:], label=modelString3)
+plt.plot(x4[last:], y4[last:], label=modelString4)
+plt.plot(x5[last:], y5[last:], label=modelString5)
+plt.plot(x6[last:], y6[last:], label=modelString6)
+'''
 plt.plot(x1, y1, label=modelString1)
 plt.plot(x2, y2, label=modelString2)
 plt.plot(x3, y3, label=modelString3)
 plt.plot(x4, y4, label=modelString4)
 plt.plot(x5, y5, label=modelString5)
 plt.plot(x6, y6, label=modelString6)
-plt.plot(x7, y7, label=modelString7)
-plt.plot(x8, y8, label=modelString8)
-plt.plot(x9, y9, label=modelString9)
+'''
+#plt.plot(x7, y7, label=modelString7)
+#plt.plot(x8, y8, label=modelString8)
+#plt.plot(x9, y9, label=modelString9)
 plt.legend(loc = 'upper left')
 plt.xlabel(xLabel)
 plt.ylabel(yLabel)
