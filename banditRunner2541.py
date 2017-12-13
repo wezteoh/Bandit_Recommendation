@@ -54,13 +54,14 @@ class BanditRunner2541(object):
         self.orderChoices = []
 
         # Initialize a proper mask
-        nonzeroMask = np.add(self.legalTrainMask, self.legalExploreMask)
-        trainMask = nonzeroMask.copy()
+        self.nonzeroMask = np.add(self.legalTrainMask, self.legalExploreMask)
+        trainMask = self.nonzeroMask.copy()
         # Mask out all the test users in global training
         for userIndex in self.testUsers:
-            trainMask[userIndex] = np.zeros(nonzeroMask[userIndex].shape)
+            trainMask[userIndex] = np.zeros(self.nonzeroMask[userIndex].shape)
+        self.globalMask = trainMask.copy()
         # Train once
-        self.uncertaintyModel.train(trainMask, None, True)
+        self.uncertaintyModel.train(self.globalMask, None, True)
         self.uncertaintyModel.save(self.fileLocation + self.modelName + self.fileExt)
 
     def getMaxExplorationNumberUser(self, oneHotExplorationMask):
@@ -95,17 +96,11 @@ class BanditRunner2541(object):
                 # Return only the ranking matrix for those users
                 self.uncertaintyModel.save_uncertainty_progress("", self.modelName, folder=self.fileLocation)
                 return self.rankingMatrix[:tempMaxNumUser]
-            # Initialize a proper mask
-            nonzeroMask = np.add(self.legalTrainMask, self.legalExploreMask)
-            # Initialize train to everything to 1 which was not zero initially
-            trainMask = nonzeroMask.copy()
-            # Initialize explore to everything to 0.0
-            exploreMask = np.zeros(nonzeroMask.shape)
-
-            # Swap them up for a specific user
-            temp = exploreMask[userIndex].copy()
-            exploreMask[userIndex] = trainMask[userIndex].copy()
-            trainMask[userIndex] = temp.copy()
+            # Reinitialize train mask
+            trainMask = self.globalMask.copy()
+            # Initialize explore to everything to 0.0 except the user's row
+            exploreMask = np.zeros(trainMask.shape)
+            exploreMask[userIndex] = self.nonzeroMask[userIndex].copy()
 
             # Start from trained model
             maxStateCounter = self.getMaxExplorationNumberUser(exploreMask)
