@@ -52,6 +52,13 @@ class BanditRunner2541(object):
         # To store results 
         self.rankingMatrix = np.zeros(exploreMask.shape)
         self.orderChoices = []
+
+        # Initialize a proper mask
+        nonzeroMask = np.add(self.legalTrainMask, self.legalExploreMask)
+        trainMask = nonzeroMask.copy()
+        # Mask out all the test users in global training
+        for userIndex in self.testUsers:
+            trainMask[userIndex] = np.zeros(nonzeroMask[userIndex].shape)
         # Train once
         self.uncertaintyModel.train(trainMask, None, True)
         self.uncertaintyModel.save(self.fileLocation + self.modelName + self.fileExt)
