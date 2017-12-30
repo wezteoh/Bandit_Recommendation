@@ -1,4 +1,4 @@
-# Bandit Recommendation
+# Uncertainty Guided Recommendation with Bandits
 In this project we provide a model for Instantaneous Feedback Recommendation
 Systems. The observed user ratings from the MovieLens dataset are recorded in
 a Ratings Matrix and the missing entries are obtained by factorizing this matrix
