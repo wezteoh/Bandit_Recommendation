@@ -16,5 +16,5 @@ recommendation sequence using the Regret metric. We found that the exploitation
 strategy dominates in the original dataset, while exploratory approaches dominates
 in a modified version of the dataset that reflect more ambiguous user preferences.
 
-The final report can be found here:
+The final paper can be found here:
 https://github.com/wezteoh/Bandit_Recommendation/blob/master/Uncertainty%20Guided%20Recommendation%20with%20Bandits.pdf
